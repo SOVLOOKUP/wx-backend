@@ -22,7 +22,6 @@ func InitConfig()  {
 	gtoken.Tokenizer.Start()
 
 	//admin平滑重启
-	s.SetErrorLogEnabled(true)
 	s.EnableAdmin()
 }
 

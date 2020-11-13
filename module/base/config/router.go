@@ -8,7 +8,13 @@ import (
 
 func InitRouter()  {
     s := g.Server()
-    s.Group("/",func(g *ghttp.RouterGroup) {
-    	g.ALL("/",api.Tasks)
+    prefix := "/api/v1/wxrobot"
+
+    s.Group(prefix+"/",func(g *ghttp.RouterGroup) {
+    	// 基础消息接收
+    	g.ALL("/",api.MessageHandler)
+
+    	// 消息模板发送
+		g.ALL("/oatemplate",api.TemplateHandler)
 	})
 }
