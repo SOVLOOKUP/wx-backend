@@ -16,5 +16,8 @@ func InitRouter()  {
 
     	// 消息模板发送
 		g.ALL("/oatemplate",api.TemplateHandler)
+
+		// 获取用户openid列表
+		g.ALL("/alluser",api.ListAllUserOpenIDs)
 	})
 }

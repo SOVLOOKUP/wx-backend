@@ -2,15 +2,21 @@ package api
 
 import (
 	"gf-app/module/base/service"
+	"gf-app/utils/resp"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/os/glog"
 	"github.com/silenceper/wechat/v2/officialaccount/message"
+	"github.com/silenceper/wechat/v2/officialaccount/user"
 )
 
-var Robot service.WxRobot
+var Robot *service.WxRobot
+var Template *message.Template
+var User *user.User
 
 func init()  {
 	Robot.Start("WxRobot-wuxi")
+	Template = Robot.Account.GetTemplate()
+	User = Robot.Account.GetUser()
 }
 
 type TemplateMessage struct {
@@ -79,8 +85,29 @@ func MessageHandler(r *ghttp.Request) {
 
 }
 
+//模板发送接口
 func TemplateHandler(r *ghttp.Request) {
-	Robot.Account.GetTemplate()
+	templateMessage := &message.TemplateMessage{}
+	r.Parse(templateMessage)
+	msgID, err := Template.Send(templateMessage)
 
-	//message.TemplateMessage{}
+	if err != nil {
+		r.Response.WriteJson(resp.Error(err.Error()))
+	}
+
+	r.Response.WriteJson(resp.Succ(msgID))
+
+}
+
+//获取用户openid列表接口
+func ListAllUserOpenIDs(r *ghttp.Request) {
+
+	openidList, err := User.ListAllUserOpenIDs()
+
+	if err != nil {
+		r.Response.WriteJson(resp.Error(err.Error()))
+	}
+
+	r.Response.WriteJson(resp.Succ(openidList))
+
 }
