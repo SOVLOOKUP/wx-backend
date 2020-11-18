@@ -9,12 +9,14 @@ import (
 	"github.com/silenceper/wechat/v2/officialaccount/user"
 )
 
-var Robot *service.WxRobot
-var Template *message.Template
-var User *user.User
+var (
+	Robot *service.WxRobot
+	Template *message.Template
+	User *user.User
+)
 
 func init()  {
-	Robot.Start("WxRobot-wuxi")
+	Robot = service.Start("WxRobot-wuxi")
 	Template = Robot.Account.GetTemplate()
 	User = Robot.Account.GetUser()
 }
@@ -45,10 +47,15 @@ func MessageHandler(r *ghttp.Request) {
 	server.SkipValidate(true)
 	//设置接收消息的处理方法
 	server.SetMessageHandler(func(msg message.MixMessage) *message.Reply {
-		//TODO
+
 		//回复消息：演示回复用户发送的消息
 		text := message.NewText(msg.Content)
-		return &message.Reply{MsgType: message.MsgTypeImage, MsgData: text}
+
+		//TODO
+		//阻止消息回复，自定义消息回复方法务必去掉这行
+		text.Content = ""
+
+		return &message.Reply{MsgType: message.MsgTypeText, MsgData: text}
 
 		//article1 := message.NewArticle("测试图文1", "图文描述", "", "")
 		//articles := []*message.Article{article1}
@@ -92,22 +99,56 @@ func TemplateHandler(r *ghttp.Request) {
 	msgID, err := Template.Send(templateMessage)
 
 	if err != nil {
-		r.Response.WriteJson(resp.Error(err.Error()))
+		r.Response.WriteJsonExit(resp.Error(err.Error()))
 	}
 
-	r.Response.WriteJson(resp.Succ(msgID))
+	r.Response.WriteJson(msgID)
 
 }
 
 //获取用户openid列表接口
 func ListAllUserOpenIDs(r *ghttp.Request) {
-
 	openidList, err := User.ListAllUserOpenIDs()
 
 	if err != nil {
-		r.Response.WriteJson(resp.Error(err.Error()))
+		r.Response.WriteJsonExit(resp.Error(err.Error()))
 	}
 
 	r.Response.WriteJson(resp.Succ(openidList))
 
+}
+
+//获取tag列表
+func GetTagList(r *ghttp.Request) {
+	tags, err := User.GetTag()
+
+	if err != nil {
+		r.Response.WriteJsonExit(resp.Error(err.Error()))
+	}
+
+	r.Response.WriteJson(resp.Succ(tags))
+}
+
+//获取tag下的用户
+func OpenIDListByTag(r *ghttp.Request) {
+	tagid := r.GetInt32("tagid")
+	openidlist, err := User.OpenIDListByTag(tagid)
+
+	if err != nil {
+		r.Response.WriteJsonExit(resp.Error(err.Error()))
+	}
+
+	r.Response.WriteJson(resp.Succ(openidlist))
+}
+
+//获取template列表
+func ListTemplate(r *ghttp.Request) {
+
+	templatelist, err := Template.List()
+
+	if err != nil {
+		r.Response.WriteJsonExit(resp.Error(err.Error()))
+	}
+
+	r.Response.WriteJson(resp.Succ(templatelist))
 }

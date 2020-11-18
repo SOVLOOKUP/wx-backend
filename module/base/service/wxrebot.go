@@ -12,8 +12,6 @@ import (
 	"net/http"
 )
 
-var cfg = g.Cfg()
-
 type WxRobot struct {
 	Wxcfg *offConfig.Config		//公众号配置
 	Name string		//实例名称
@@ -21,22 +19,24 @@ type WxRobot struct {
 	Account *officialaccount.OfficialAccount	//公众号实例
 }
 
-func (a *WxRobot) Start(name string) *WxRobot {
+func Start(name string) *WxRobot {
+	var cfg = g.Cfg()
 	wc := wechat.NewWechat()
-
-	//名称和时间
-	a.Name = name
-	a.CreateTime = gtime.Now()
 	memory := cache.NewMemory()
 
-	//配置实例
-	a.Wxcfg = &offConfig.Config{
-		AppID:     cfg.GetString("werobot.wxAppId"),
-		AppSecret: cfg.GetString("werobot.wxAppSecret"),
-		Token:     cfg.GetString("werobot.wxToken"),
-		//EncodingAESKey: "xxxx",
-		Cache: memory,
+	a := &WxRobot{
+		Wxcfg: &offConfig.Config{
+			AppID:     cfg.GetString("werobot.wxAppId"),
+			AppSecret: cfg.GetString("werobot.wxAppSecret"),
+			Token:     cfg.GetString("werobot.wxToken"),
+			//EncodingAESKey: "xxxx",
+			Cache: memory,
+		},
+		Name: name,
+		CreateTime: gtime.Now(),
+		//Account: wc.GetOfficialAccount(),
 	}
+
 	a.Account = wc.GetOfficialAccount(a.Wxcfg)
 	glog.Printf(`
 WxRobot start success!
