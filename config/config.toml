@@ -9,6 +9,10 @@
 	Address     = ":8199"
 	ServerAgent = "wx-police-platform"
 
+[graphql]
+	GRAPHQL_TOKEN     = "Xiafan123"
+	GRAPHQL_URL = "http://database.gonorth.top:8080/v1/graphql"
+
 # 鉴权器设置
 [tokenizer]
     loginPath   = "/login"

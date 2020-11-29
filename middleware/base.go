@@ -27,3 +27,9 @@ func Login(r *ghttp.Request) (string, interface{}) {
 
 	return username, userdata
 }
+
+//跨域
+func MiddlewareCORS(r *ghttp.Request) {
+	r.Response.CORSDefault()
+	r.Middleware.Next()
+}

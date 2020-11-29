@@ -13,7 +13,7 @@ func InitRouter()  {
 
     s.Group(prefix+"/",func(g *ghttp.RouterGroup) {
     	// 基础消息接收
-    	g.ALL("/",api.MessageHandler)
+    	//g.ALL("/",api.MessageHandler)
 
     	// 消息模板发送
 		g.ALL("/oatemplate",api.TemplateHandler)
@@ -29,5 +29,8 @@ func InitRouter()  {
 
 		// 获取templatelist
 		g.ALL("/templatelist",api.ListTemplate)
+
+		// 获取templatelist
+		g.ALL("/clearquota",api.ClearQuota)
 	})
 }

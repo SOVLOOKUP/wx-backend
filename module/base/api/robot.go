@@ -4,7 +4,7 @@ import (
 	"gf-app/module/base/service"
 	"gf-app/utils/resp"
 	"github.com/gogf/gf/net/ghttp"
-	"github.com/gogf/gf/os/glog"
+	"github.com/silenceper/wechat/v2/officialaccount/basic"
 	"github.com/silenceper/wechat/v2/officialaccount/message"
 	"github.com/silenceper/wechat/v2/officialaccount/user"
 )
@@ -13,12 +13,14 @@ var (
 	Robot *service.WxRobot
 	Template *message.Template
 	User *user.User
+	Basic *basic.Basic
 )
 
 func init()  {
 	Robot = service.Start("WxRobot-wuxi")
 	Template = Robot.Account.GetTemplate()
 	User = Robot.Account.GetUser()
+	Basic = basic.NewBasic(Robot.Account.GetContext())
 }
 
 type TemplateMessage struct {
@@ -41,62 +43,63 @@ type TemplateDataItem struct {
 }
 
 // 基准消息处理
-func MessageHandler(r *ghttp.Request) {
-	r.Response.Write(Robot.Name,"\n",Robot.CreateTime)
-	server := Robot.GetServer(r.Response.Writer.RawWriter(),r.Request)
-	server.SkipValidate(true)
-	//设置接收消息的处理方法
-	server.SetMessageHandler(func(msg message.MixMessage) *message.Reply {
-
-		//回复消息：演示回复用户发送的消息
-		text := message.NewText(msg.Content)
-
-		//TODO
-		//阻止消息回复，自定义消息回复方法务必去掉这行
-		text.Content = ""
-
-		return &message.Reply{MsgType: message.MsgTypeText, MsgData: text}
-
-		//article1 := message.NewArticle("测试图文1", "图文描述", "", "")
-		//articles := []*message.Article{article1}
-		//news := message.NewNews(articles)
-		//return &message.Reply{MsgType: message.MsgTypeNews, MsgData: news}
-
-		//voice := message.NewVoice(mediaID)
-		//return &message.Reply{MsgType: message.MsgTypeVoice, MsgData: voice}
-
-		//
-		//video := message.NewVideo(mediaID, "标题", "描述")
-		//return &message.Reply{MsgType: message.MsgTypeVideo, MsgData: video}
-
-		//music := message.NewMusic("标题", "描述", "音乐链接", "HQMusicUrl", "缩略图的媒体id")
-		//return &message.Reply{MsgType: message.MsgTypeMusic, MsgData: music}
-
-		//多客服消息转发
-		//transferCustomer := message.NewTransferCustomer("")
-		//return &message.Reply{MsgType: message.MsgTypeTransfer, MsgData: transferCustomer}
-	})
-
-	//处理消息接收以及回复
-	err := server.Serve()
-	if err != nil {
-		glog.Printf("Serve Error, err=%+v", err)
-		return
-	}
-	//发送回复的消息
-	err = server.Send()
-	if err != nil {
-		glog.Printf("Send Error, err=%v", err)
-		return
-	}
-
-}
+//func MessageHandler(r *ghttp.Request) {
+//	r.Response.Write(Robot.Name,"\n",Robot.CreateTime)
+//	server := Robot.GetServer(r.Response.Writer.RawWriter(),r.Request)
+//	server.SkipValidate(true)
+//	//设置接收消息的处理方法
+//	server.SetMessageHandler(func(msg message.MixMessage) *message.Reply {
+//
+//		//回复消息：演示回复用户发送的消息
+//		text := message.NewText(msg.Content)
+//
+//		//TODO
+//		//阻止消息回复，自定义消息回复方法务必去掉这行
+//		text.Content = ""
+//
+//		return &message.Reply{MsgType: message.MsgTypeText, MsgData: text}
+//
+//		//article1 := message.NewArticle("测试图文1", "图文描述", "", "")
+//		//articles := []*message.Article{article1}
+//		//news := message.NewNews(articles)
+//		//return &message.Reply{MsgType: message.MsgTypeNews, MsgData: news}
+//
+//		//voice := message.NewVoice(mediaID)
+//		//return &message.Reply{MsgType: message.MsgTypeVoice, MsgData: voice}
+//
+//		//
+//		//video := message.NewVideo(mediaID, "标题", "描述")
+//		//return &message.Reply{MsgType: message.MsgTypeVideo, MsgData: video}
+//
+//		//music := message.NewMusic("标题", "描述", "音乐链接", "HQMusicUrl", "缩略图的媒体id")
+//		//return &message.Reply{MsgType: message.MsgTypeMusic, MsgData: music}
+//
+//		//多客服消息转发
+//		//transferCustomer := message.NewTransferCustomer("")
+//		//return &message.Reply{MsgType: message.MsgTypeTransfer, MsgData: transferCustomer}
+//	})
+//
+//	//处理消息接收以及回复
+//	err := server.Serve()
+//	if err != nil {
+//		glog.Printf("Serve Error, err=%+v", err)
+//		return
+//	}
+//	//发送回复的消息
+//	err = server.Send()
+//	if err != nil {
+//		glog.Printf("Send Error, err=%v", err)
+//		return
+//	}
+//
+//}
 
 //模板发送接口
 func TemplateHandler(r *ghttp.Request) {
 	templateMessage := &message.TemplateMessage{}
 	r.Parse(templateMessage)
 	msgID, err := Template.Send(templateMessage)
+	//templateMessage.ToUser
 
 	if err != nil {
 		r.Response.WriteJsonExit(resp.Error(err.Error()))
@@ -151,4 +154,16 @@ func ListTemplate(r *ghttp.Request) {
 	}
 
 	r.Response.WriteJson(resp.Succ(templatelist))
+}
+
+//清空调用次数
+func ClearQuota(r *ghttp.Request) {
+
+	err := Basic.ClearQuota()
+
+	if err != nil {
+		r.Response.WriteJsonExit(resp.Error(err.Error()))
+	}
+
+	r.Response.WriteJson(resp.Succ("ok"))
 }
